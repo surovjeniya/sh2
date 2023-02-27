@@ -1,0 +1,102 @@
+version: '4'
+
+services:
+
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+      target: development
+    command: npm run start:dev api
+    restart: always
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./apps/api/.env
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  auth:
+    container_name: auth
+    build:
+      context: .
+      dockerfile: ./apps/auth/Dockerfile
+      target: development
+    command: npm run start:dev auth
+    restart: always
+    env_file:
+      - ./apps/auth/.env
+    depends_on:
+      - user_db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+  
+  profile:
+    container_name: profile
+    build:
+      context: .
+      dockerfile: ./apps/profile/Dockerfile
+      target: development
+    command: npm run start:dev profile
+    restart: always
+    env_file:
+      - ./apps/profile/.env
+    depends_on:
+      - profile_db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  user_db:
+    image: postgres
+    container_name: user_db
+    restart: always
+    env_file:
+      - ./apps/auth/.env
+    volumes:
+      - local_pgdata_user:/var/lib/postgresql/data
+  
+  profile_db:
+    image: postgres
+    container_name: profile_db
+    restart: always
+    env_file:
+      - ./apps/profile/.env
+    volumes:
+      - local_pgdata_profile:/var/lib/postgresql/data
+  
+  adminer:
+    image: adminer
+    restart: always
+    container_name: adminer
+    depends_on:
+      - user_db
+      - profile_db
+    ports:
+      - "8888:8080"
+  
+  rabbitmq:
+    image: rabbitmq:3.11.9-management-alpine
+    container_name: rabbitmq
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - local_rmqdata:/var/lib/rabbitmq/data
+
+volumes:
+  local_pgdata_user:
+  local_rmqdata:
+  local_pgdata_profile:
+
+  
+  
+ 
+  
