@@ -1,12 +1,13 @@
-import { ProfileGetOne, UserGetOne, UserUpdate } from '@app/common';
-import { ProfileCreate } from '@app/common/contract/profile.create.contract';
+import { ProfileGetOne, UserGetOne, UserUpdate,ProfileCreate,ProfileDelete,ProfileUpdate } from '@app/common';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
   Post,
+  Put,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { IJwtTokenPayload } from 'apps/auth/src/interface/jwt-payload.interface'
 import { catchError, throwError ,lastValueFrom} from 'rxjs';
 import { PROFILE_SERVICE, USER_SERVICE } from '../constant/service';
 import { CreateProfileDto } from '../dto/create-profile.dto';
+import { UpdateProfileDto } from '../dto/update-profile.dto';
 import JwtAuthGuard from '../guard/jwt-auth.guard';
 
 @Controller('profile')
@@ -27,7 +29,6 @@ export class ProfileController {
 
   @Get(':id')
   async getProfile(@Param('id') id: string) {
-   
     const profile = await lastValueFrom(
       this.profileClient
         .send<ProfileGetOne.Response, ProfileGetOne.Request>(
@@ -49,6 +50,45 @@ export class ProfileController {
       profile,user
     }
     
+  }
+
+  @UseGuards()
+  @Delete(':id')
+  async deleteProfile(@Param('id') id:string){
+    const deletedProfile = await lastValueFrom(
+      this.profileClient
+        .send<ProfileDelete.Response, ProfileDelete.Request>(
+          ProfileDelete.topic,
+          { id: Number(id) },
+        )
+        .pipe(
+          catchError((error) =>
+            throwError(() => new RpcException(error.response)),
+          ),
+        ),
+    );
+    return deletedProfile
+  }
+
+  @UseGuards()
+  @Put(':id')
+  async updateProfile(@Param('id') id:string,@Body() dto:UpdateProfileDto){
+    const updatedProfile = await lastValueFrom(
+      this.profileClient
+        .send<ProfileUpdate.Response, ProfileUpdate.Request>(
+          ProfileUpdate.topic,
+          {
+            id,
+            dto,
+          },
+        )
+        .pipe(
+          catchError((error) =>
+            throwError(() => new RpcException(error.response)),
+          ),
+        ),
+    );
+    return updatedProfile
   }
 
   @UseGuards(JwtAuthGuard)
