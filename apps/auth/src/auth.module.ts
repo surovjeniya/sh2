@@ -8,12 +8,13 @@ import * as Joi from 'joi'
 import {JwtModule} from '@nestjs/jwt'
 import { getJwtConfig } from './config/jwt.config';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { EMAILER_SERVICE } from './constant/service';
 
 @Module({
   imports: [
     DatabaseModule,
     UserModule,
-    RmqModule,
+    RmqModule.register({ name: EMAILER_SERVICE }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -34,6 +35,8 @@ import { JwtStrategy } from './strategy/jwt.strategy';
         POSTGRES_PORT: Joi.number().required(),
         RABBIT_MQ_URI: Joi.string().required(),
         RABBIT_MQ_AUTH_QUEUE: Joi.string().required(),
+        RABBIT_MQ_EMAILER_QUEUE: Joi.string().required(),
+        SERVER: Joi.string().required(),
       }),
     }),
   ],

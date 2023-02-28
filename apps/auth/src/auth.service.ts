@@ -1,18 +1,22 @@
-import { AuthLogin, AuthRegistration } from '@app/common';
+import { AuthLogin, AuthRegistration, EmailerSendEmail, getConfirmRegistration } from '@app/common';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { compare } from 'bcrypt';
+import { lastValueFrom } from 'rxjs';
 import {
   EMAIL_ALREADY_USED,
   INVALID_CONFIRMATION_ID,
   INVALID_CRIDENTIALS,
   USERNAME_ALREADY_USER,
 } from './constant/auth-exception.constant';
+import { EMAILER_SERVICE } from './constant/service';
 import { IJwtTokenPayload } from './interface/jwt-payload.interface';
 import { Role, UserEntity } from './user/entity/user.entity';
 import { UserService } from './user/user.service';
@@ -22,6 +26,8 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly configService:ConfigService,
+    @Inject(EMAILER_SERVICE) private readonly emailerClient:ClientProxy
   ) {}
 
   async generateJwtToken(user: UserEntity): Promise<string> {
@@ -73,6 +79,12 @@ export class AuthService {
       throw new RpcException(new BadRequestException(USERNAME_ALREADY_USER));
     }
     const user = await this.userService.createUser(dto);
+    await lastValueFrom(this.emailerClient.emit<EmailerSendEmail.Response,EmailerSendEmail.Request>(EmailerSendEmail.topic,{
+      subject:'Подтверждение регистрации на сайте Sellershub.ru',
+      html:getConfirmRegistration(this.configService.get('SERVER'),user.confirmation_id),
+      text:'',
+      to:user.email
+    }))
     const accessToken = await this.generateJwtToken(user);
     return {
       user,
