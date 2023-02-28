@@ -8,11 +8,13 @@ import {
   AUTH_SERVICE,
   CATALOG_SERVICE,
   PROFILE_SERVICE,
+  UPLOAD_SERVICE,
   USER_SERVICE,
 } from './constant/service';
 import { AuthController } from './controllers/auth.controller';
 import {ParentCategoryController } from './controllers/parent-category.controller';
 import { ProfileController } from './controllers/profile.controller';
+import { UploadController } from './controllers/upload.controller';
 import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
@@ -21,6 +23,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     RmqModule.register({ name: PROFILE_SERVICE }),
     RmqModule.register({ name: USER_SERVICE }),
     RmqModule.register({ name: CATALOG_SERVICE }),
+    RmqModule.register({name:UPLOAD_SERVICE}),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -37,11 +40,14 @@ import { JwtStrategy } from './strategy/jwt.strategy';
         RABBIT_MQ_AUTH_QUEUE: Joi.string().required(),
         RABBIT_MQ_PROFILE_QUEUE: Joi.string().required(),
         RABBIT_MQ_CATALOG_QUEUE: Joi.string().required(),
+        RABBIT_MQ_USER_QUEUE: Joi.string().required(),
+        RABBIT_MQ_UPLOAD_QUEUE: Joi.string().required(),
+        SERVER: Joi.string().required(),
         PORT: Joi.number().required(),
       }),
     }),
   ],
-  controllers: [AuthController, ProfileController, ParentCategoryController],
+  controllers: [AuthController, ProfileController, ParentCategoryController,UploadController],
   providers: [JwtStrategy],
 })
 export class ApiModule {}

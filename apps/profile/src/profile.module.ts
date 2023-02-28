@@ -6,7 +6,6 @@ import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import * as Joi from 'joi'
 import { ConfigModule } from '@nestjs/config';
-import { AUTH_SERVICE, USER_SERVICE } from './constant/service';
 
 @Module({
   imports: [
