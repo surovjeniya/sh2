@@ -4,7 +4,7 @@ import { RegistrationDto } from '../dto/registration.dto';
 import { AuthLogin, AuthRegistration } from '@app/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { AUTH_SERVICE } from '../constant/service';
-import { catchError,throwError } from 'rxjs';
+import { catchError,lastValueFrom,throwError } from 'rxjs';
 import { AuthConfirm } from '@app/common/contract/auth.confirm';
 
 
@@ -14,43 +14,45 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() dto: LoginDto) {
-    return this.authClient
-      .send<AuthLogin.Response, AuthLogin.Request>(AuthLogin.topic, dto)
-      .pipe(
-        catchError((error) =>
-          throwError(() => new RpcException(error.response)),
+    const loginResponse =  await lastValueFrom(
+      this.authClient
+        .send<AuthLogin.Response,AuthLogin.Request>(AuthLogin.topic,dto)
+        .pipe(
+          catchError((error) =>
+            throwError(() => new RpcException(error.response)),
+          ),
         ),
-      );
+    );
+    
+    return loginResponse;
   }
 
   @Post('registration')
   async registration(@Body() dto: RegistrationDto) {
-    return this.authClient
-      .send<AuthRegistration.Response, AuthRegistration.Request>(
-        AuthRegistration.topic,
-        dto,
-      )
-      .pipe(
-        catchError((error) =>
-          throwError(() => new RpcException(error.response)),
-        ),
-      );
+   const registrationResponse =  await lastValueFrom(
+     this.authClient
+       .send<AuthRegistration.Response,AuthRegistration.Request>(AuthRegistration.topic,dto)
+       .pipe(
+         catchError((error) =>
+           throwError(() => new RpcException(error.response)),
+         ),
+       ),
+   );
+   return registrationResponse;
   }
 
 
   @Get(':confirmation_id')
   async confirmUser(@Param('confirmation_id') confirmation_id: string){
-    return this.authClient
-      .send<AuthConfirm.Response, AuthConfirm.Request>(
-        AuthConfirm.topic,
-        {
-          confirmation_id
-        }
-      )
-      .pipe(
-        catchError((error) =>
-          throwError(() => new RpcException(error.response)),
-        ),
-      );
+   const confirmationResponse =  await lastValueFrom(
+     this.authClient
+       .send<AuthConfirm.Response,AuthConfirm.Request>(AuthConfirm.topic,{confirmation_id})
+       .pipe(
+         catchError((error) =>
+           throwError(() => new RpcException(error.response)),
+         ),
+       ),
+   );
+   return confirmationResponse;
   }
 }

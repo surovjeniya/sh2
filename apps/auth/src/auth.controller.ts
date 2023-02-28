@@ -22,6 +22,7 @@ export class AuthController {
 
   @MessagePattern(AuthConfirm.topic)
   async confirmUser(@Payload() dto:AuthConfirm.Request) {
-    return await this.authService.confirmUser(dto.confirmation_id);
+    const confirmationData:AuthConfirm.Response =  await this.authService.confirmUser(dto.confirmation_id);
+    return confirmationData
   }
 }

@@ -1,3 +1,5 @@
+import { DeleteResult } from "typeorm";
+
 export namespace ProfileDelete {
   export const topic = 'profile.delete.command';
 
@@ -5,7 +7,5 @@ export namespace ProfileDelete {
     id:number
   }
 
-  export class Response {
-    
-  }
+  export class Response extends DeleteResult {}
 }
