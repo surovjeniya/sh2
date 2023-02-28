@@ -1,1 +1,2 @@
 export const PROFILE_SERVICE='PROFILE'
+export const EMAILER_SERVICE='EMAILER'

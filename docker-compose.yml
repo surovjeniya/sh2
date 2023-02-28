@@ -67,6 +67,22 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+  
+  emailer:
+    container_name: emailer
+    build:
+      context: .
+      dockerfile: ./apps/emailer/Dockerfile
+      target: development
+    command: npm run start:dev emailer
+    restart: always
+    env_file:
+      - ./apps/emailer/.env
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
 
   user_db:
     image: postgres

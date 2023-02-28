@@ -14,11 +14,7 @@ export class UserService {
 
   async getUser(param: FindOptionsWhere<UserEntity>): Promise<UserEntity> {
     const user = await this.userRepository.findOne({ where: param });
-    if(user && user.email) {
-      return user
-    }else {
-      throw new RpcException(new NotFoundException('User not found'));
-    }
+    return user
   }
 
   async updateUser(

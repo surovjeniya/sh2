@@ -1,6 +1,6 @@
 import { AuthLogin, AuthRegistration } from '@app/common';
 import { AuthConfirm } from '@app/common/contract/auth.confirm';
-import {Controller} from '@nestjs/common';
+import {Controller, PayloadTooLargeException} from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 
