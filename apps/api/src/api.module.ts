@@ -2,10 +2,16 @@ import { RmqModule } from '@app/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import * as Joi from 'joi'
+import * as Joi from 'joi';
 import { getJwtConfig } from './config/jwt.config';
-import { AUTH_SERVICE, PROFILE_SERVICE, USER_SERVICE } from './constant/service';
+import {
+  AUTH_SERVICE,
+  CATALOG_SERVICE,
+  PROFILE_SERVICE,
+  USER_SERVICE,
+} from './constant/service';
 import { AuthController } from './controllers/auth.controller';
+import {ParentCategoryController } from './controllers/parent-category.controller';
 import { ProfileController } from './controllers/profile.controller';
 import { JwtStrategy } from './strategy/jwt.strategy';
 
@@ -14,6 +20,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     RmqModule.register({ name: AUTH_SERVICE }),
     RmqModule.register({ name: PROFILE_SERVICE }),
     RmqModule.register({ name: USER_SERVICE }),
+    RmqModule.register({ name: CATALOG_SERVICE }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -29,11 +36,12 @@ import { JwtStrategy } from './strategy/jwt.strategy';
         RABBIT_MQ_URI: Joi.string().required(),
         RABBIT_MQ_AUTH_QUEUE: Joi.string().required(),
         RABBIT_MQ_PROFILE_QUEUE: Joi.string().required(),
+        RABBIT_MQ_CATALOG_QUEUE: Joi.string().required(),
         PORT: Joi.number().required(),
       }),
     }),
   ],
-  controllers: [AuthController, ProfileController],
+  controllers: [AuthController, ProfileController, ParentCategoryController],
   providers: [JwtStrategy],
 })
 export class ApiModule {}

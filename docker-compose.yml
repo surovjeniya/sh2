@@ -51,6 +51,22 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+  
+  catalog:
+    container_name: catalog
+    build:
+      context: .
+      dockerfile: ./apps/catalog/Dockerfile
+      target: development
+    command: npm run start:dev catalog
+    restart: always
+    env_file:
+      - ./apps/catalog/.env
+    depends_on:
+      - catalog_db
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
 
   user_db:
     image: postgres
@@ -60,6 +76,15 @@ services:
       - ./apps/auth/.env
     volumes:
       - local_pgdata_user:/var/lib/postgresql/data
+  
+  catalog_db:
+    image: postgres
+    container_name: catalog_db
+    restart: always
+    env_file:
+      - ./apps/catalog/.env
+    volumes:
+      - local_pgdata_catalog:/var/lib/postgresql/data
   
   profile_db:
     image: postgres
@@ -77,6 +102,7 @@ services:
     depends_on:
       - user_db
       - profile_db
+      - catalog_db
     ports:
       - "8888:8080"
   
@@ -93,6 +119,7 @@ services:
 
 volumes:
   local_pgdata_user:
+  local_pgdata_catalog:
   local_rmqdata:
   local_pgdata_profile:
 
