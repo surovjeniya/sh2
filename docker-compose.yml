@@ -52,6 +52,22 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
   
+  upload:
+    container_name: upload
+    build:
+      context: .
+      dockerfile: ./apps/upload/Dockerfile
+      target: development
+    command: npm run start:dev upload
+    restart: always
+    env_file:
+      - ./apps/upload/.env
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+  
   catalog:
     container_name: catalog
     build:
