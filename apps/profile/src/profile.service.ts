@@ -1,13 +1,18 @@
-import { ProfileUpdate } from '@app/common';
+import { ProfileCreated, ProfileDeleted, ProfileUpdate } from '@app/common';
 import { ProfileCreate } from '@app/common/contract/profile.create.contract';
 import {
   BadRequestException,
+  ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IJwtTokenPayload } from 'apps/auth/src/interface/jwt-payload.interface';
+import { lastValueFrom } from 'rxjs';
 import { FindOptionsWhere, Repository } from 'typeorm';
+import { USER_SERVICE } from './constant/service';
 import { ProfileEntity } from './entity/profile.entity';
 
 @Injectable()
@@ -15,24 +20,38 @@ export class ProfileService {
   constructor(
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
+    @Inject(USER_SERVICE) private readonly userClient:ClientProxy
   ) {}
 
-  async deleteProfile(id: number) {
+  async deleteProfile(id: number,user?:IJwtTokenPayload) {
     const profile = await this.getProfile({ id });
+    if(profile.id !== user.profile_id) throw new RpcException(new ForbiddenException('Its not yours profile.'));
     try {
-      return await this.profileRepository.delete({ id });
+      const deletedProfile =  await this.profileRepository.delete({ id });
+      await lastValueFrom(this.userClient.emit<ProfileDeleted.Response,ProfileDeleted.Request>(ProfileDeleted.topic,{user_id:user.id}))
+      return deletedProfile
     } catch (e) {
       throw new RpcException(new BadRequestException(e.message));
     }
   }
 
-  async createProfile(dto: ProfileCreate.Request) {
+  async createProfile(dto: ProfileCreate.Request):Promise<ProfileEntity> {
     try {
       //@ts-ignore
-      const profile = this.profileRepository.create({
+      const profile:ProfileEntity = this.profileRepository.create({
         ...dto,
       });
-      return await this.profileRepository.save(profile);
+      const createdProfile = await this.profileRepository.save(profile);
+      await lastValueFrom(
+        this.userClient.send<ProfileCreated.Response, ProfileCreated.Request>(
+          ProfileCreated.topic,
+          {
+            profile_id: createdProfile.id,
+            user_id: profile.user_id,
+          },
+        ),
+      );
+      return createdProfile;
     } catch (e) {
       throw new RpcException(new BadRequestException(e.message));
     }

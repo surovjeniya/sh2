@@ -15,6 +15,7 @@ import { AuthController } from './controllers/auth.controller';
 import {ParentCategoryController } from './controllers/parent-category.controller';
 import { ProfileController } from './controllers/profile.controller';
 import { UploadController } from './controllers/upload.controller';
+import { UserController } from './controllers/user.controller';
 import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
@@ -47,7 +48,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       }),
     }),
   ],
-  controllers: [AuthController, ProfileController, ParentCategoryController,UploadController],
+  controllers: [AuthController, ProfileController, ParentCategoryController,UploadController,UserController],
   providers: [JwtStrategy],
 })
 export class ApiModule {}

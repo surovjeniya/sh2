@@ -1,11 +1,12 @@
 import { RmqService, UploadImage } from '@app/common';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseInterceptors } from '@nestjs/common';
 import {
   Ctx,
   MessagePattern,
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 
 @Controller()
@@ -14,6 +15,7 @@ export class UploadController {
     private readonly uploadService: UploadService,
     private readonly rmqService: RmqService,
   ) {}
+
 
   @MessagePattern(UploadImage.topic)
   async uploadImage(
