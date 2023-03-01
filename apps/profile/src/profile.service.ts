@@ -2,6 +2,7 @@ import { ProfileCreated, ProfileDeleted, ProfileUpdate } from '@app/common';
 import { ProfileCreate } from '@app/common/contract/profile.create.contract';
 import {
   BadRequestException,
+  CACHE_MANAGER,
   ForbiddenException,
   Inject,
   Injectable,
@@ -14,31 +15,39 @@ import { lastValueFrom } from 'rxjs';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { USER_SERVICE } from './constant/service';
 import { ProfileEntity } from './entity/profile.entity';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProfileService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     @InjectRepository(ProfileEntity)
     private readonly profileRepository: Repository<ProfileEntity>,
-    @Inject(USER_SERVICE) private readonly userClient:ClientProxy
+    @Inject(USER_SERVICE) private readonly userClient: ClientProxy,
   ) {}
 
-  async deleteProfile(id: number,user?:IJwtTokenPayload) {
+  async deleteProfile(id: number, user?: IJwtTokenPayload) {
     const profile = await this.getProfile({ id });
-    if(profile.id !== user.profile_id) throw new RpcException(new ForbiddenException('Its not yours profile.'));
+    if (profile.id !== user.profile_id)
+      throw new RpcException(new ForbiddenException('Its not yours profile.'));
     try {
-      const deletedProfile =  await this.profileRepository.delete({ id });
-      await lastValueFrom(this.userClient.emit<ProfileDeleted.Response,ProfileDeleted.Request>(ProfileDeleted.topic,{user_id:user.id}))
-      return deletedProfile
+      const deletedProfile = await this.profileRepository.delete({ id });
+      await lastValueFrom(
+        this.userClient.emit<ProfileDeleted.Response, ProfileDeleted.Request>(
+          ProfileDeleted.topic,
+          { user_id: user.id },
+        ),
+      );
+      return deletedProfile;
     } catch (e) {
       throw new RpcException(new BadRequestException(e.message));
     }
   }
 
-  async createProfile(dto: ProfileCreate.Request):Promise<ProfileEntity> {
+  async createProfile(dto: ProfileCreate.Request): Promise<ProfileEntity> {
     try {
       //@ts-ignore
-      const profile:ProfileEntity = this.profileRepository.create({
+      const profile: ProfileEntity = this.profileRepository.create({
         ...dto,
       });
       const createdProfile = await this.profileRepository.save(profile);
@@ -60,7 +69,8 @@ export class ProfileService {
   async getProfile(param: FindOptionsWhere<ProfileEntity>) {
     const profile = await this.profileRepository.findOne({ where: param });
     if (profile && profile.firstName) {
-      return profile;
+      await this.cacheManager.set('profile', profile);
+      return await this.cacheManager.get<ProfileEntity>('profile');
     } else {
       throw new RpcException(new NotFoundException(`Profile  not found`));
     }
@@ -68,7 +78,16 @@ export class ProfileService {
 
   async getProfiles(): Promise<ProfileEntity[]> {
     try {
-      return await this.profileRepository.find();
+      const profilesFromCache = await this.cacheManager.get<ProfileEntity[]>(
+        'profiles',
+      );
+      if(profilesFromCache) {
+        return profilesFromCache;
+      }else {
+        const profiles = await this.profileRepository.find();
+        await this.cacheManager.set('profiles', profiles);
+        return await this.cacheManager.get<ProfileEntity[]>('profiles');
+      }
     } catch (e) {
       throw new RpcException(new BadRequestException(e.message));
     }

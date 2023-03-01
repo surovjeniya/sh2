@@ -50,7 +50,10 @@ export class ProfileController {
     @Payload() payload: ProfileDelete.Request,
     @Ctx() ctx: RmqContext,
   ) {
-    const deletedProfile = await this.profileService.deleteProfile(payload.id,payload.user);
+    const deletedProfile = await this.profileService.deleteProfile(
+      payload.id,
+      payload.user,
+    );
     this.rmqService.ack(ctx);
     return deletedProfile;
   }
