@@ -6,12 +6,13 @@ import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import * as Joi from 'joi'
 import { ConfigModule } from '@nestjs/config';
+import { USER_SERVICE } from './constant/service';
 
 @Module({
   imports: [
     DatabaseModule,
     TypeOrmModule.forFeature([ProfileEntity]),
-    RmqModule,
+    RmqModule.register({name:USER_SERVICE}),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: './apps/profile/.env',

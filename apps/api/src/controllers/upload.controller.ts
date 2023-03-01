@@ -28,8 +28,8 @@ export class UploadController {
         fileSize: 1024 * 1024 * 4,
       },
       storage: diskStorage({
+        destination: './uploads/',
         filename: editFileName,
-        destination: process.env.UPLOAD_FILES_FOLDER,
       }),
     }),
   )

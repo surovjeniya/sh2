@@ -1,3 +1,4 @@
+import { IJwtTokenPayload } from "apps/auth/src/interface/jwt-payload.interface";
 import { DeleteResult } from "typeorm";
 
 export namespace ProfileDelete {
@@ -5,6 +6,7 @@ export namespace ProfileDelete {
 
   export class Request {
     id:number
+    user?:IJwtTokenPayload
   }
 
   export class Response extends DeleteResult {}

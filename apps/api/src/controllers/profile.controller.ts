@@ -17,10 +17,12 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common/exceptions';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CurrentUser } from 'apps/auth/src/decorator/current-user.decorator';
 import { IJwtTokenPayload } from 'apps/auth/src/interface/jwt-payload.interface';
 import { catchError, throwError, lastValueFrom } from 'rxjs';
+import { USER_NOT_CONFIRMED } from '../constant/profile.exception';
 import { PROFILE_SERVICE } from '../constant/service';
 import { CreateProfileDto } from '../dto/create-profile.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
@@ -55,12 +57,12 @@ export class ProfileController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async deleteProfile(@Param('id', new ParseIntPipe()) id: number) {
+  async deleteProfile(@Param('id', new ParseIntPipe()) id: number,@CurrentUser() user:IJwtTokenPayload) {
     const profileDeleteResponse = await lastValueFrom(
       this.profileClient
         .send<ProfileDelete.Response, ProfileDelete.Request>(
           ProfileDelete.topic,
-          { id },
+          { id ,user},
         )
         .pipe(
           catchError((error) =>
@@ -111,6 +113,7 @@ export class ProfileController {
     @Body() dto: CreateProfileDto,
     @CurrentUser() user: IJwtTokenPayload,
   ) {
+    if(!user.confirmed) throw new ForbiddenException(USER_NOT_CONFIRMED);
     const createProfileResponse = await lastValueFrom(
       this.profileClient
         .send<ProfileCreate.Response, ProfileCreate.Request>(
