@@ -1,4 +1,4 @@
-import { ParentCategoryCreate, ParentCategoryGetOne, RmqService,ParrentCategoryGetMany, ParrentCategoryDelete } from "@app/common";
+import { ParentCategoryCreate, ParentCategoryGetOne, RmqService,ParrentCategoryGetMany, ParrentCategoryDelete, ParentCategoryUpdate } from "@app/common";
 import { Controller } from "@nestjs/common";
 import { Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
 import { ParentCategoryService } from "./parent-category.service";
@@ -52,5 +52,12 @@ export class ParrentCategoryController {
     const deletedParentCategory = await this.parentCategoryService.deleteParentCategory(payload.id)
     this.rmqService.ack(ctx);
     return deletedParentCategory;
+  }
+
+  @MessagePattern(ParentCategoryUpdate.topic)
+  async updateProfile(@Payload() payload:ParentCategoryUpdate.Request,@Ctx() ctx:RmqContext){
+    const updatedParentCategory = await this.parentCategoryService.updateParentCategory({id:payload.id},{...payload})
+    this.rmqService.ack(ctx)
+    return updatedParentCategory
   }
 }

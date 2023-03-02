@@ -1,4 +1,4 @@
-import { ParentCategoryCreate, ParrentCategoryGetMany, ParentCategoryGetOne, ParrentCategoryDelete } from '@app/common';
+import { ParentCategoryCreate, ParrentCategoryGetMany, ParentCategoryGetOne, ParrentCategoryDelete,ParentCategoryUpdate } from '@app/common';
 import {
   Body,
   Controller,
@@ -9,10 +9,16 @@ import {
   ParseIntPipe,
   Post,
 } from '@nestjs/common';
+import { Put, UseGuards } from '@nestjs/common/decorators';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { Role } from 'apps/auth/src/user/entity/user.entity';
 import { catchError, lastValueFrom, throwError } from 'rxjs';
 import { CATALOG_SERVICE } from '../constant/service';
+import { Roles } from '../decorator/roles.decorator';
 import { CreateParentCategoryDto } from '../dto/create-parent-category.dto';
+import { UpdateParentCategoryDto } from '../dto/update-parent-category.dto';
+import JwtAuthGuard from '../guard/jwt-auth.guard';
+import { RolesGuard } from '../guard/roles.guard';
 
 @Controller('parent-category')
 export class ParentCategoryController {
@@ -20,6 +26,9 @@ export class ParentCategoryController {
     @Inject(CATALOG_SERVICE) private readonly catalogClient: ClientProxy,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Post()
   async createParentCategory(@Body() dto: CreateParentCategoryDto) {
     const parentCategoryCreateResponse = await lastValueFrom(
@@ -38,13 +47,13 @@ export class ParentCategoryController {
   }
 
   @Get()
-  async getParentCategories(){
+  async getParentCategories() {
     const parentCaregoryGetManyResponse = await lastValueFrom(
       this.catalogClient
-        .send<ParrentCategoryGetMany.Response[], ParrentCategoryGetMany.Request>(
-          ParrentCategoryGetMany.topic,
-          {},
-        )
+        .send<
+          ParrentCategoryGetMany.Response[],
+          ParrentCategoryGetMany.Request
+        >(ParrentCategoryGetMany.topic, {})
         .pipe(
           catchError((error) =>
             throwError(() => new RpcException(error.response)),
@@ -71,8 +80,11 @@ export class ParentCategoryController {
     return parentCategoryGetOneResponse;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
-  async deleteParentCategory(@Param('id',new ParseIntPipe()) id:number){
+  async deleteParentCategory(@Param('id', new ParseIntPipe()) id: number) {
     const parentCategoryDeleteResponse = await lastValueFrom(
       this.catalogClient
         .send<ParrentCategoryDelete.Response, ParrentCategoryDelete.Request>(
@@ -85,6 +97,26 @@ export class ParentCategoryController {
           ),
         ),
     );
-    return parentCategoryDeleteResponse
+    return parentCategoryDeleteResponse;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Put(':id')
+  async updateParentCategory(@Body() dto:UpdateParentCategoryDto,@Param('id',new ParseIntPipe()) id:number) {
+    const parentCategoryUpdateResponse = await lastValueFrom(
+      this.catalogClient
+        .send<ParentCategoryUpdate.Response, ParentCategoryUpdate.Request>(
+          ParentCategoryUpdate.topic,
+          { ...dto,id },
+        )
+        .pipe(
+          catchError((error) =>
+            throwError(() => new RpcException(error.response)),
+          ),
+        ),
+    );
+    return parentCategoryUpdateResponse;
   }
 }

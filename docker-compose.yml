@@ -9,7 +9,7 @@ services:
       dockerfile: ./apps/api/Dockerfile
       target: development
     command: npm run start:dev api
-    restart: always
+    restart: unless-stopped
     ports:
       - '3000:3000'
     env_file:
@@ -27,11 +27,11 @@ services:
       dockerfile: ./apps/auth/Dockerfile
       target: development
     command: npm run start:dev auth
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./apps/auth/.env
     depends_on:
-      - user_db
+      - postgres
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -43,11 +43,11 @@ services:
       dockerfile: ./apps/profile/Dockerfile
       target: development
     command: npm run start:dev profile
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./apps/profile/.env
     depends_on:
-      - profile_db
+      - postgres
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -59,7 +59,7 @@ services:
       dockerfile: ./apps/upload/Dockerfile
       target: development
     command: npm run start:dev upload
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./apps/upload/.env
     depends_on:
@@ -75,11 +75,11 @@ services:
       dockerfile: ./apps/catalog/Dockerfile
       target: development
     command: npm run start:dev catalog
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./apps/catalog/.env
     depends_on:
-      - catalog_db
+      - postgres
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -91,7 +91,7 @@ services:
       dockerfile: ./apps/emailer/Dockerfile
       target: development
     command: npm run start:dev emailer
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./apps/emailer/.env
     depends_on:
@@ -100,41 +100,22 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
 
-  user_db:
-    image: postgres
-    container_name: user_db
+  postgres:
+    image: postgres:15.2-alpine
+    container_name: postgres
+    hostname: postgres
     restart: always
-    env_file:
-      - ./apps/auth/.env
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
     volumes:
-      - local_pgdata_user:/var/lib/postgresql/data
-  
-  catalog_db:
-    image: postgres
-    container_name: catalog_db
-    restart: always
-    env_file:
-      - ./apps/catalog/.env
-    volumes:
-      - local_pgdata_catalog:/var/lib/postgresql/data
-  
-  profile_db:
-    image: postgres
-    container_name: profile_db
-    restart: always
-    env_file:
-      - ./apps/profile/.env
-    volumes:
-      - local_pgdata_profile:/var/lib/postgresql/data
+      - local_pgdata:/var/lib/postgresql/data
   
   adminer:
     image: adminer
-    restart: always
+    restart: unless-stopped
     container_name: adminer
-    depends_on:
-      - user_db
-      - profile_db
-      - catalog_db
     ports:
       - "8888:8080"
   
@@ -142,18 +123,27 @@ services:
     image: rabbitmq:3.11.9-management-alpine
     container_name: rabbitmq
     hostname: rabbitmq
-    restart: always
+    restart: unless-stopped
     ports:
       - '5672:5672'
       - '15672:15672'
     volumes:
       - local_rmqdata:/var/lib/rabbitmq/data
 
+  redis:
+    container_name: cache
+    hostname: cache
+    image: redis:7.0.9-alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - local_redisdata:/data
+
 volumes:
-  local_pgdata_user:
-  local_pgdata_catalog:
+  local_pgdata:
   local_rmqdata:
-  local_pgdata_profile:
+  local_redisdata:
 
   
   

@@ -6,10 +6,22 @@ import { CatalogService } from './catalog.service';
 import { ParentCategoryModule } from './parent-category/parent-category.module';
 import * as Joi from 'joi'
 import { SubCategoryModule } from './sub-category/sub-category.module';
+import { ServiceModule } from './service/service.module';
+import { TagModule } from './tag/tag.module';
+import { ReviewModule } from './review/review.module';
+import { ReviewLikeModule } from './review-like/review-like.module';
+import { MarketplaceModule } from './marketplace/marketplace.module';
+import { ReviewAnswerModule } from './review-answer/review-answer.module';
 
 
 @Module({
   imports: [
+    ReviewAnswerModule,
+    MarketplaceModule,
+    ReviewLikeModule,
+    ReviewModule,
+    TagModule,
+    ServiceModule,
     SubCategoryModule,
     ParentCategoryModule,
     DatabaseModule,
@@ -20,7 +32,7 @@ import { SubCategoryModule } from './sub-category/sub-category.module';
       validationSchema: Joi.object({
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
-        POSTGRES_DATABASE: Joi.string().required(),
+        POSTGRES_DB: Joi.string().required(),
         POSTGRES_HOST: Joi.string().required(),
         POSTGRES_PORT: Joi.number().required(),
         RABBIT_MQ_URI: Joi.string().required(),

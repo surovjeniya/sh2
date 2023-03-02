@@ -1,5 +1,6 @@
 import {ProfileCreate, ProfileDelete, ProfileGetMany, ProfileGetOne, ProfileUpdate, RmqService } from '@app/common';
-import { Controller } from '@nestjs/common';
+import { Controller, UseInterceptors } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/common/cache';
 import {
   Ctx,
   MessagePattern,
@@ -24,6 +25,7 @@ export class ProfileController {
     this.rmqService.ack(ctx);
     return profile;
   }
+
 
   @MessagePattern(ProfileGetMany.topic)
   async getProfiles(
