@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
+import { DeleteResult, FindOneOptions, FindOptionsWhere, Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { ParentCategoryEntity } from './entity/parent-category.entity';
 
 @Injectable()
@@ -52,10 +53,23 @@ export class ParentCategoryService {
     }
   }
 
-  async deleteParentCategory(id: number) {
+  async deleteParentCategory(id: number):Promise<DeleteResult> {
     const category = await this.getParentCategory({ id });
     try {
-      return await this.parentCategoryRepository.delete(id);
+      return await this.parentCategoryRepository.delete({id});
+    } catch (e) {
+      throw new RpcException(new BadRequestException(e.message));
+    }
+  }
+
+  async updateParentCategory(criteria:FindOptionsWhere<ParentCategoryEntity>,partialEntity: QueryDeepPartialEntity<ParentCategoryEntity>){
+    const category = await this.getParentCategory({id:criteria.id})
+    try {
+       await this.parentCategoryRepository.update(
+        criteria,
+        partialEntity,
+      );
+      return await this.getParentCategory({ id: criteria.id });
     } catch (e) {
       throw new RpcException(new BadRequestException(e.message));
     }

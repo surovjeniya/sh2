@@ -40,7 +40,7 @@ export class Location {
   city: string;
 }
 
-@Entity({ name: 'Profile' })
+@Entity({ name: 'profile' })
 export class ProfileEntity extends BaseEntity {
   @Column()
   firstName: string;

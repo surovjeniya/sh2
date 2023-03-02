@@ -14,6 +14,7 @@ import {
 import { AuthController } from './controllers/auth.controller';
 import {ParentCategoryController } from './controllers/parent-category.controller';
 import { ProfileController } from './controllers/profile.controller';
+import { SubCategoryController } from './controllers/sub-category-controller';
 import { UploadController } from './controllers/upload.controller';
 import { UserController } from './controllers/user.controller';
 import { JwtStrategy } from './strategy/jwt.strategy';
@@ -24,7 +25,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     RmqModule.register({ name: PROFILE_SERVICE }),
     RmqModule.register({ name: USER_SERVICE }),
     RmqModule.register({ name: CATALOG_SERVICE }),
-    RmqModule.register({name:UPLOAD_SERVICE}),
+    RmqModule.register({ name: UPLOAD_SERVICE }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -48,7 +49,14 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       }),
     }),
   ],
-  controllers: [AuthController, ProfileController, ParentCategoryController,UploadController,UserController],
+  controllers: [
+    AuthController,
+    ProfileController,
+    ParentCategoryController,
+    UploadController,
+    UserController,
+    SubCategoryController,
+  ],
   providers: [JwtStrategy],
 })
 export class ApiModule {}
