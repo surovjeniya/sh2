@@ -139,11 +139,6 @@ services:
       - 6379:6379
     volumes:
       - local_redisdata:/data
-  
-  redisinsight:
-    image: redislabs/redisinsight:1.13.1
-    ports:
-      - '8001:8001'
 
 volumes:
   local_pgdata:
