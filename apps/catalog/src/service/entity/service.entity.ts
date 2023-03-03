@@ -54,7 +54,7 @@ export class ServiceEntity extends BaseEntity {
   advantages: IAdvantages;
 
   @Column({ type: 'simple-json', nullable: true })
-  fetures: IFeatures;
+  features: IFeatures;
 
   @Column({ type: 'simple-json', nullable: true })
   tariff_analytics: ITariffAnalytics;

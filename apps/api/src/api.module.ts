@@ -11,12 +11,16 @@ import {
   UPLOAD_SERVICE,
   USER_SERVICE,
 } from './constant/service';
-import { AuthController } from './controllers/auth.controller';
-import {ParentCategoryController } from './controllers/parent-category.controller';
-import { ProfileController } from './controllers/profile.controller';
-import { SubCategoryController } from './controllers/sub-category-controller';
-import { UploadController } from './controllers/upload.controller';
-import { UserController } from './controllers/user.controller';
+import {
+  AuthController,
+  ProfileController,
+  ParentCategoryController,
+  UploadController,
+  UserController,
+  SubCategoryController,
+  MarketplaceController,
+  ServiceController
+} from './controllers';
 import { JwtStrategy } from './strategy/jwt.strategy';
 
 @Module({
@@ -56,6 +60,8 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     UploadController,
     UserController,
     SubCategoryController,
+    MarketplaceController,
+    ServiceController,
   ],
   providers: [JwtStrategy],
 })

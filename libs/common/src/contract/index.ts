@@ -1,2 +1,7 @@
 export * from './catalog/sub-category.delete.contract'
 export * from './catalog/sub-category.update.contract'
+export * from './catalog/marketplce.create.contract'
+export * from './catalog/marketpalce.get-many.contract'
+export *  from './catalog/marketplace.get-one.contract'
+export * from './catalog/marketplace.delete.contract'
+export * from './catalog/marketplace.update.contract'
