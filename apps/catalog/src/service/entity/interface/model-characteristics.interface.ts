@@ -1,1 +1,1 @@
-export interface IModelCharacterictics {}
+export interface IModelCharacteristics {}

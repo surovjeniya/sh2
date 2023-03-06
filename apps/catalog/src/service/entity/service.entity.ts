@@ -1,7 +1,8 @@
 import { BaseEntity } from '@app/common';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { MarketplaceEntity } from '../../marketplace/entity/marketplace.entity';
 import { ReviewEntity } from '../../review/entity/review.entity';
+import { SubCategoryEntity } from '../../sub-category/entity/sub-category.entity';
 import { TagEntity } from '../../tag/entity/tag.entity';
 import { EyesColorEnum } from './enum/eyes-color.enum';
 import { HairsColorEnum } from './enum/hairs-color.enum';
@@ -20,7 +21,7 @@ import { IDeliveryRegion } from './interface/delivery-region.interface';
 import { IDiscount } from './interface/discount.interface';
 import { IFeatures } from './interface/features.interface';
 import { IMinimumVolume } from './interface/minimum-volume.interface';
-import { IModelCharacterictics } from './interface/model-characteristics.interface';
+import { IModelCharacteristics } from './interface/model-characteristics.interface';
 import { IPriceInfo } from './interface/price-info.interface';
 import { IProductCategory } from './interface/product-category.interface';
 import { IRegion } from './interface/region.interface';
@@ -64,9 +65,6 @@ export class ServiceEntity extends BaseEntity {
 
   @Column()
   placed_at: Date;
-
-  @Column()
-  sub_category_id: number;
 
   // @Column()
   // previews: any; // media multi images and video
@@ -165,7 +163,7 @@ export class ServiceEntity extends BaseEntity {
   eyes_color: EyesColorEnum;
 
   @Column({ type: 'simple-json', nullable: true })
-  model_characteristics: IModelCharacterictics;
+  model_characteristics: IModelCharacteristics;
 
   @Column({
     type: 'enum',
@@ -242,4 +240,9 @@ export class ServiceEntity extends BaseEntity {
 
   @OneToMany(() => MarketplaceEntity,marketplace => marketplace.service)
   marketplaces:MarketplaceEntity[]
+
+  @ManyToOne(() => SubCategoryEntity,category =>category.services)
+  @JoinColumn({name:'sub_category_id'})
+  subCategory:SubCategoryEntity
+
 }

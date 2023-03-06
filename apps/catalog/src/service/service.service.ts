@@ -11,7 +11,7 @@ export class ServiceService {
     private readonly serviceRepository: ServiceRepository,
   ) {}
 
-  async createService(){
+  async createService(data){
     try {
         const service = this.serviceRepository.create()
         return await this.serviceRepository.save(service)
